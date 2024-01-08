@@ -1,5 +1,4 @@
 import React from 'react'
-import HomePage from '@/components/HomePage/HomePage'
 import Image from "next/image";
 import PaginationControls from '@/components/PaginationControls'
 
@@ -74,11 +73,11 @@ export default async function Home(
   
   return (
     <main>
-      <div className="display flex justify-center py-6 font-bold text-6xl text-green-800">Pokedex</div>
+      <div className="display flex justify-center py-6 font-bold text-6xl text-red-700">Pokedex</div>
       <PaginationControls
         hasNextPage={end < pokemonData.length}
         hasPrevPage={start > 0}
-        dataLength={entries.length}
+        dataLength={pokemonData.length}
       />
       {/* <HomePage /> */}
       <div className="flex justify-center">
