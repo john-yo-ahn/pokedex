@@ -21,7 +21,6 @@ const PaginationControls: FC<PaginationControlsProps> = (
   const page = searchParams?.get('page') ?? '1'
   const per_page = searchParams?.get('per_page') ?? '6'
   const pageMax = Math.ceil(dataLength/Number(per_page))
-  console.log('data', pageMax)
 
   return (
         <div className='flex md:justify-end gap-2 lg:pr-10 justify-center md:pr-5'>
