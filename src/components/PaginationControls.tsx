@@ -23,7 +23,7 @@ const PaginationControls: FC<PaginationControlsProps> = (
   const pageMax = Math.ceil(dataLength/Number(per_page))
 
   return (
-        <div className='flex md:justify-end gap-2 lg:pr-10 justify-center md:pr-5'>
+        <div className='flex lg:justify-end gap-2 lg:pr-10 justify-center md:pr-5'>
         <button
             className={`${hasPrevPage ? 'bg-green-800 active:bg-green-700 hover:bg-green-700': 'bg-gray-500'} text-white p-2 cursor-pointer rounded-full px-5`}
             disabled={!hasPrevPage}
