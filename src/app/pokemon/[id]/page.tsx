@@ -36,8 +36,8 @@ export default async function PokemonPage({
       <div className="flex justify-center">
         <Image
           src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`}
-          width={600}
-          height={600}
+          width={550}
+          height={550}
           alt={`Pokemon Picture ${id}`}
         />
       </div>
