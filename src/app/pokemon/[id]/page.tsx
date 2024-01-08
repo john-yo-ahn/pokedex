@@ -28,6 +28,35 @@ export default async function PokemonPage({
   const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
   const data = await res.json();
 
+  const speciesRes = await fetch(data.species.url);
+  const speciesData = await speciesRes.json();
+
+  const evolutionIdRes = await fetch(speciesData.evolution_chain.url);
+  const evolutionIdData = await evolutionIdRes.json();
+  const evolutionId = evolutionIdData.id;
+
+  const evolutionChainRes = await fetch(
+    "https://beta.pokeapi.co/graphql/v1beta",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: `
+      query getEvolutionChainData {
+        evolution: pokemon_v2_pokemonspecies(where: {pokemon_v2_generation: {}, pokemon_v2_evolutionchain: {id: {_eq: ${evolutionId}}}}, order_by: {id: asc}) {
+          name
+          id
+          evolution_chain_id
+        }
+      }
+      
+              `,
+      }),
+    }
+  );
+  const evolutionChainData = await evolutionChainRes.json();
+
+  const { evolution } = evolutionChainData.data;
   const { abilities, stats, types, name, weight } = data;
   const capitalizedName = name[0].toUpperCase() + name.slice(1);
   return (
@@ -39,6 +68,7 @@ export default async function PokemonPage({
           width={550}
           height={550}
           alt={`Pokemon Picture ${id}`}
+          priority
         />
       </div>
       <div className="flex justify-center">
@@ -79,6 +109,25 @@ export default async function PokemonPage({
                 name[0].toUpperCase() + name.slice(1);
               return <div key={`${url}-${name}`}>{capitalizedAbilityName}</div>;
             })}
+            <div className="font-medium text-lg mt-4">Evolution Chain</div>
+            <div className="flex justify-center">
+              {evolution.map((item: any) => {
+                const isOneImage = evolution.length === 1
+                const capitalizeEvolutionName = item.name[0].toUpperCase() + item.name.slice(1)
+                return (
+                  <div key={`evolution-chain-image${item.id}`}>
+                    <Image
+                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${item.id}.png`}
+                      width={isOneImage ? 200 : 150}
+                      height={isOneImage ? 200 : 150}
+                      alt={`Pokemon Picture ${id}`}
+                      priority
+                    />
+                    <div className="font-medium">{capitalizeEvolutionName}</div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
