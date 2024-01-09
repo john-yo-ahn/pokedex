@@ -216,7 +216,7 @@ export default function Home({
           );
         })}
       </select>
-      <select className="ml-5 cursor-pointer border p-2" name="type" id="type" value={selectedTypeFilter} onChange={handleTypeChange}>
+      <select className="ml-5 sm:mt-0 mt-5 cursor-pointer border p-2" name="type" id="type" value={selectedTypeFilter} onChange={handleTypeChange}>
       <option
           key={`filterType - default`}
           value="None"
