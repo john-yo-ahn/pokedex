@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
-
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useRouter } from 'next/navigation'
 import Image from "next/image";
 import Link from "next/link";
 import Loading from "@/components/Loading";
@@ -9,12 +9,13 @@ import PaginationControls from "@/components/PaginationControls";
 interface PokemonItem {
   name: string;
   id: number;
+  info: any;
 }
 
-interface PokemonTypeItem {
+interface MonsterObjectItem {
+  name: string;
   id: number;
-  pokemon_id: number;
-  pokemon_v2_type: { name: string; id: number };
+  types: string[];
 }
 
 export default function Home({
@@ -22,16 +23,20 @@ export default function Home({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const router = useRouter()
+  
   const page = searchParams["page"] ?? "1";
   const per_page = searchParams["per_page"] ?? "6";
 
-  let monsterMap: any = {};
   const [pokemonData, setPokemonData] = useState<PokemonItem[]>([]);
+  const [filteredData, setFilteredData] = useState<MonsterObjectItem[]>([]);
+  const [selectedNameFilter, setSelectedNameFilter] = useState<string>("None");
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>("None");
   const [loading, setLoading] = useState<boolean>(false);
 
-  const memoizedInitialData = useMemo(() => {}, []);
-
-  //grab list of first gen pokemons and types references to populate a hashmap
+  const memoizedInitialData = useMemo(() => {
+    return restructureMonsterData(pokemonData);
+  }, [pokemonData]);
 
   async function fetchPokemonData() {
     const res = await fetch("https://beta.pokeapi.co/graphql/v1beta", {
@@ -39,20 +44,23 @@ export default function Home({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         query: `
-              query retrieveFirstGenSpeciesAndTypesquery {
-                  gen1_species: pokemon_v2_pokemonspecies(where: {pokemon_v2_generation: {name: {_eq: "generation-i"}}}, order_by: {id: asc}) {
-                name
-                id
-              }
-              pokemon_v2_pokemontype {
-                id
-                pokemon_id
-                pokemon_v2_type {
-                  name
-                  id
+        query getFirstGenPokemon {
+          gen1_species: pokemon_v2_pokemonspecies(where: {pokemon_v2_generation: {name: {_eq: "generation-i"}}}, order_by: {id: asc}) {
+            name
+            id
+            info: pokemon_v2_pokemons_aggregate(limit: 1) {
+              nodes {
+                types: pokemon_v2_pokemontypes {
+                  type: pokemon_v2_type {
+                    name
+                  }
                 }
+                pokemon_species_id
               }
             }
+            evolution_chain_id
+          }
+        }
               `,
       }),
     });
@@ -60,42 +68,81 @@ export default function Home({
 
     const {
       gen1_species: pokemonData,
-      pokemon_v2_pokemontype: pokemonTypeData,
     }: {
       gen1_species: PokemonItem[];
-      pokemon_v2_pokemontype: PokemonTypeItem[];
     } = data.data;
 
     setPokemonData(pokemonData);
-
-    //populate hashmap with pokemon id's as keys and include name and type (array)
-
-    function restructureData() {
-      pokemonData.forEach((item: PokemonItem) => {
-        if (!monsterMap[item.id]) {
-          monsterMap[item.id] = { name: item.name, type: [] };
-        }
-      });
-      pokemonTypeData.forEach((item: PokemonTypeItem) => {
-        if (item.pokemon_id in monsterMap) {
-          monsterMap[item.pokemon_id].type.push(item.pokemon_v2_type.name);
-        }
-      });
-    }
-
-    restructureData();
     setLoading(false);
   }
+
+  const start = (Number(page) - 1) * Number(per_page);
+  const end = start + Number(per_page);
+
+  const displayData =
+    //filter conditions
+    selectedNameFilter === "None" && selectedTypeFilter === "None"
+      ? memoizedInitialData
+      : filteredData;
+
+  const entries = displayData.slice(start, end);
 
   useEffect(() => {
     setLoading(true);
     fetchPokemonData();
   }, []);
 
-  const start = (Number(page) - 1) * Number(per_page);
-  const end = start + Number(per_page);
+  //rerenders for filters
+  useEffect(() => {}, [selectedNameFilter, selectedTypeFilter]);
 
-  const entries = pokemonData.slice(start, end);
+  function restructureMonsterData(data: PokemonItem[]) {
+    return data.map((item: any) => {
+      let monsterObj: any = {};
+      monsterObj["name"] = item.name;
+      monsterObj["id"] = item.id;
+      let monsterTypes: string[] = [];
+      item.info.nodes[0].types.forEach((item: any) => {
+        monsterTypes.push(item.type.name);
+      });
+      monsterObj["types"] = monsterTypes;
+      return monsterObj;
+    });
+  }
+
+  function filterByNameHandle(name: string) {
+    setLoading(true)
+    const sanitizedName = name.toLowerCase();
+    setFilteredData([]);
+    setSelectedTypeFilter("None");
+    setSelectedNameFilter(sanitizedName);
+    const filteredData = memoizedInitialData.filter(
+      (item: MonsterObjectItem) => {
+        return item.name === sanitizedName;
+      }
+    );
+    setFilteredData(filteredData);
+    //to reset page to 1 for filtered results
+    router.push(`/?page=1&per_page=${per_page}`)
+    setLoading(false)
+  }
+
+
+  function filterByTypeHandle(type: string) {
+    setLoading(true)
+    const sanitizedType = type.toLowerCase();
+    setFilteredData([]);
+    setSelectedNameFilter("None");
+    setSelectedNameFilter(sanitizedType);
+    const filteredData = memoizedInitialData.filter(
+      (item: MonsterObjectItem) => {
+        return item.types.includes(sanitizedType);
+      }
+    );
+    //to reset page to 1 for filtered results
+    router.push(`/?page=1&per_page=${per_page}`)
+    setFilteredData(filteredData);
+    setLoading(false)
+  }
 
   return (
     <main className="md:pb-20 pb-10">
@@ -104,10 +151,24 @@ export default function Home({
       </div>
       <div className="lg:block hidden">
         <PaginationControls
-          hasNextPage={end < pokemonData.length}
+          hasNextPage={end < displayData.length}
           hasPrevPage={start > 0}
-          dataLength={pokemonData.length}
+          dataLength={displayData.length}
         />
+      </div>
+      <div
+        onClick={() => {
+          filterByNameHandle("charmeleon")
+        }}
+      >
+        Name
+      </div>
+      <div
+        onClick={() => {
+          filterByTypeHandle("fire");
+        }}
+      >
+        Type
       </div>
       {loading ? (
         <Loading />
