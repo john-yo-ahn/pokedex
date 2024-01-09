@@ -1,11 +1,10 @@
 "use client";
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import Loading from "@/components/Loading";
 import PaginationControls from "@/components/PaginationControls";
-import { clear } from "console";
 
 interface PokemonItem {
   name: string;
