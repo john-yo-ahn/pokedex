@@ -1,10 +1,11 @@
 "use client";
 import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { useRouter } from 'next/navigation'
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import Loading from "@/components/Loading";
 import PaginationControls from "@/components/PaginationControls";
+import { clear } from "console";
 
 interface PokemonItem {
   name: string;
@@ -23,13 +24,15 @@ export default function Home({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const router = useRouter()
-  
+  const router = useRouter();
+
   const page = searchParams["page"] ?? "1";
   const per_page = searchParams["per_page"] ?? "6";
 
   const [pokemonData, setPokemonData] = useState<PokemonItem[]>([]);
   const [filteredData, setFilteredData] = useState<MonsterObjectItem[]>([]);
+  const [typeData, setTypeData] = useState<any[]>([]);
+
   const [selectedNameFilter, setSelectedNameFilter] = useState<string>("None");
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>("None");
   const [loading, setLoading] = useState<boolean>(false);
@@ -37,6 +40,17 @@ export default function Home({
   const memoizedInitialData = useMemo(() => {
     return restructureMonsterData(pokemonData);
   }, [pokemonData]);
+  const memoizedPokemonNames = useMemo(() => {
+    return pokemonData.map((item) => {
+      return item.name;
+    });
+  }, [pokemonData]);
+
+  const memoizedTypeData = useMemo(()=>{
+    return typeData.map((item) => {
+      return item
+    })
+  },[typeData])
 
   async function fetchPokemonData() {
     const res = await fetch("https://beta.pokeapi.co/graphql/v1beta", {
@@ -96,21 +110,31 @@ export default function Home({
   useEffect(() => {}, [selectedNameFilter, selectedTypeFilter]);
 
   function restructureMonsterData(data: PokemonItem[]) {
+    let monsterTypeSet = new Set();
     return data.map((item: any) => {
       let monsterObj: any = {};
       monsterObj["name"] = item.name;
       monsterObj["id"] = item.id;
       let monsterTypes: string[] = [];
       item.info.nodes[0].types.forEach((item: any) => {
+        monsterTypeSet.add(item.type.name);
         monsterTypes.push(item.type.name);
       });
+      setTypeData(Array.from(monsterTypeSet));
       monsterObj["types"] = monsterTypes;
+
       return monsterObj;
     });
   }
 
+  const clearHandle = () => {
+    setSelectedNameFilter("None");
+    setSelectedTypeFilter("None");
+    return router.push("/");
+  };
+
   function filterByNameHandle(name: string) {
-    setLoading(true)
+    setLoading(true);
     const sanitizedName = name.toLowerCase();
     setFilteredData([]);
     setSelectedTypeFilter("None");
@@ -122,31 +146,49 @@ export default function Home({
     );
     setFilteredData(filteredData);
     //to reset page to 1 for filtered results
-    router.push(`/?page=1&per_page=${per_page}`)
-    setLoading(false)
+    router.push(`/?page=1&per_page=${per_page}`);
+    setLoading(false);
   }
 
-
   function filterByTypeHandle(type: string) {
-    setLoading(true)
+    setLoading(true);
     const sanitizedType = type.toLowerCase();
     setFilteredData([]);
     setSelectedNameFilter("None");
-    setSelectedNameFilter(sanitizedType);
+    setSelectedTypeFilter(sanitizedType);
     const filteredData = memoizedInitialData.filter(
       (item: MonsterObjectItem) => {
         return item.types.includes(sanitizedType);
       }
     );
     //to reset page to 1 for filtered results
-    router.push(`/?page=1&per_page=${per_page}`)
+    router.push(`/?page=1&per_page=${per_page}`);
     setFilteredData(filteredData);
-    setLoading(false)
+    setLoading(false);
   }
+
+  const handleNameChange = (event: any) => {
+    if (event.target.value === "None") {
+      clearHandle();
+    } else {
+      filterByNameHandle(event.target.value);
+    }
+  };
+
+  const handleTypeChange = (event: any) => {
+    if (event.target.value === "None") {
+      clearHandle();
+    } else {
+      filterByTypeHandle(event.target.value);
+    }
+  };
 
   return (
     <main className="md:pb-20 pb-10">
-      <div className="display flex justify-center py-6 font-bold text-6xl text-[#fbd743]">
+      <div
+        className="display flex justify-center py-6 font-bold text-6xl text-[#fbd743] cursor-pointer"
+        onClick={clearHandle}
+      >
         Pokedex
       </div>
       <div className="lg:block hidden">
@@ -156,20 +198,44 @@ export default function Home({
           dataLength={displayData.length}
         />
       </div>
-      <div
-        onClick={() => {
-          filterByNameHandle("charmeleon")
-        }}
-      >
-        Name
-      </div>
-      <div
-        onClick={() => {
-          filterByTypeHandle("fire");
-        }}
-      >
-        Type
-      </div>
+      <select name="type" id="type" value={selectedNameFilter} onChange={handleNameChange}>
+        <option
+          key={`filterType - default`}
+          value="None"
+        >
+          Please Select
+        </option>
+        {memoizedPokemonNames.map((item) => {
+          const capitalizedName = item[0].toUpperCase() + item.slice(1);
+          return (
+            <option
+              key={`filterName - ${item}`}
+              value={item}
+            >
+              {capitalizedName}
+            </option>
+          );
+        })}
+      </select>
+      <select name="type" id="type" value={selectedTypeFilter} onChange={handleTypeChange}>
+      <option
+          key={`filterType - default`}
+          value="None"
+        >
+          Please Select
+        </option>
+        {memoizedTypeData.map((item) => {
+          const capitalizedType = item[0].toUpperCase() + item.slice(1);
+          return (
+            <option
+              key={`filterName - ${item}`}
+              value={item}
+            >
+              {capitalizedType}
+            </option>
+          );
+        })}
+      </select>
       {loading ? (
         <Loading />
       ) : (
