@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -28,6 +28,8 @@ export default function Home({
   let monsterMap: any = {};
   const [pokemonData, setPokemonData] = useState<PokemonItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const memoizedInitialData = useMemo(() => {}, []);
 
   //grab list of first gen pokemons and types references to populate a hashmap
 
@@ -88,7 +90,6 @@ export default function Home({
   useEffect(() => {
     setLoading(true);
     fetchPokemonData();
-    
   }, []);
 
   const start = (Number(page) - 1) * Number(per_page);
@@ -112,7 +113,7 @@ export default function Home({
         <Loading />
       ) : (
         <div className="flex justify-center lg:pt-15 pt-10">
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 lg:gap-6 md:gap-3 lg:px-0 md:px-4 px-2 lg:pb-0 pb-10">
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 lg:gap-6 gap-4 lg:px-0 md:px-4 px-2 lg:pb-0 pb-10">
             {entries.map((item: PokemonItem) => {
               const { id, name } = item;
               const capitalizedName = name[0].toUpperCase() + name.slice(1);
@@ -121,7 +122,13 @@ export default function Home({
                   key={`${name}-${id}`}
                   className="border border-[#fbd743] rounded-lg cursor-pointer hover:opacity-25"
                 >
-                  <Link href={`/pokemon/${id}`} shallow onClick={()=>{setLoading(true)}}>
+                  <Link
+                    href={`/pokemon/${id}`}
+                    shallow
+                    onClick={() => {
+                      setLoading(true);
+                    }}
+                  >
                     <div className="flex justify-center font-bold text-[#ff1f1f] text-lg pt-2">
                       {capitalizedName}
                     </div>
@@ -138,14 +145,15 @@ export default function Home({
           </div>
         </div>
       )}
-
-      <div className="pb-10 lg:hidden block">
-        <PaginationControls
-          hasNextPage={end < pokemonData.length}
-          hasPrevPage={start > 0}
-          dataLength={pokemonData.length}
-        />
-      </div>
+      {!loading && (
+        <div className="pb-10 lg:hidden block">
+          <PaginationControls
+            hasNextPage={end < pokemonData.length}
+            hasPrevPage={start > 0}
+            dataLength={pokemonData.length}
+          />
+        </div>
+      )}
     </main>
   );
 }
