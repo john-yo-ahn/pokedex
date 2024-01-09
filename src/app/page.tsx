@@ -197,7 +197,7 @@ export default function Home({
           dataLength={displayData.length}
         />
       </div>
-      <select className="ml-5 cursor-pointer" name="type" id="type" value={selectedNameFilter} onChange={handleNameChange}>
+      <select className="ml-5 cursor-pointer border p-2" name="type" id="type" value={selectedNameFilter} onChange={handleNameChange}>
         <option
           key={`filterType - default`}
           value="None"
@@ -216,7 +216,7 @@ export default function Home({
           );
         })}
       </select>
-      <select className="ml-5 cursor-pointer" name="type" id="type" value={selectedTypeFilter} onChange={handleTypeChange}>
+      <select className="ml-5 cursor-pointer border p-2" name="type" id="type" value={selectedTypeFilter} onChange={handleTypeChange}>
       <option
           key={`filterType - default`}
           value="None"
