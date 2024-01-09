@@ -198,7 +198,7 @@ export default function Home({
           dataLength={displayData.length}
         />
       </div>
-      <select name="type" id="type" value={selectedNameFilter} onChange={handleNameChange}>
+      <select className="ml-3 cursor-pointer" name="type" id="type" value={selectedNameFilter} onChange={handleNameChange}>
         <option
           key={`filterType - default`}
           value="None"
@@ -217,7 +217,7 @@ export default function Home({
           );
         })}
       </select>
-      <select name="type" id="type" value={selectedTypeFilter} onChange={handleTypeChange}>
+      <select className="ml-3 cursor-pointer" name="type" id="type" value={selectedTypeFilter} onChange={handleTypeChange}>
       <option
           key={`filterType - default`}
           value="None"
@@ -275,9 +275,9 @@ export default function Home({
       {!loading && (
         <div className="pb-10 lg:hidden block">
           <PaginationControls
-            hasNextPage={end < pokemonData.length}
+            hasNextPage={end < displayData.length}
             hasPrevPage={start > 0}
-            dataLength={pokemonData.length}
+            dataLength={displayData.length}
           />
         </div>
       )}
