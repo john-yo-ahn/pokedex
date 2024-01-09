@@ -197,12 +197,12 @@ export default function Home({
           dataLength={displayData.length}
         />
       </div>
-      <select className="ml-3 cursor-pointer" name="type" id="type" value={selectedNameFilter} onChange={handleNameChange}>
+      <select className="ml-5 cursor-pointer" name="type" id="type" value={selectedNameFilter} onChange={handleNameChange}>
         <option
           key={`filterType - default`}
           value="None"
         >
-          Please Select
+          Please Select - Name
         </option>
         {memoizedPokemonNames.map((item) => {
           const capitalizedName = item[0].toUpperCase() + item.slice(1);
@@ -216,12 +216,12 @@ export default function Home({
           );
         })}
       </select>
-      <select className="ml-3 cursor-pointer" name="type" id="type" value={selectedTypeFilter} onChange={handleTypeChange}>
+      <select className="ml-5 cursor-pointer" name="type" id="type" value={selectedTypeFilter} onChange={handleTypeChange}>
       <option
           key={`filterType - default`}
           value="None"
         >
-          Please Select
+          Please Select - Type
         </option>
         {memoizedTypeData.map((item) => {
           const capitalizedType = item[0].toUpperCase() + item.slice(1);
