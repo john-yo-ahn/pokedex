@@ -45,18 +45,19 @@ export default function Home({
     });
   }, [pokemonData]);
 
-  const memoizedTypeData = useMemo(()=>{
+  const memoizedTypeData = useMemo(() => {
     return typeData.map((item) => {
-      return item
-    })
-  },[typeData])
+      return item;
+    });
+  }, [typeData]);
 
   async function fetchPokemonData() {
-    const res = await fetch("https://beta.pokeapi.co/graphql/v1beta", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: `
+    try {
+      const res = await fetch("https://beta.pokeapi.co/graphql/v1beta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: `
         query getFirstGenPokemon {
           gen1_species: pokemon_v2_pokemonspecies(where: {pokemon_v2_generation: {name: {_eq: "generation-i"}}}, order_by: {id: asc}) {
             name
@@ -75,17 +76,21 @@ export default function Home({
           }
         }
               `,
-      }),
-    });
-    const data = await res.json();
+        }),
+      });
+      const data = await res.json();
 
-    const {
-      gen1_species: pokemonData,
-    }: {
-      gen1_species: PokemonItem[];
-    } = data.data;
+      const {
+        gen1_species: pokemonData,
+      }: {
+        gen1_species: PokemonItem[];
+      } = data.data;
 
-    setPokemonData(pokemonData);
+      setPokemonData(pokemonData);
+    } catch (error) {
+      console.error("error in home data fetch", error);
+    }
+
     setLoading(false);
   }
 
@@ -197,39 +202,39 @@ export default function Home({
           dataLength={displayData.length}
         />
       </div>
-      <select className="ml-5 cursor-pointer border p-2" name="type" id="type" value={selectedNameFilter} onChange={handleNameChange}>
-        <option
-          key={`filterType - default`}
-          value="None"
-        >
+      <select
+        className="ml-5 cursor-pointer border p-2"
+        name="type"
+        id="type"
+        value={selectedNameFilter}
+        onChange={handleNameChange}
+      >
+        <option key={`filterType - default`} value="None">
           Please Select - Name
         </option>
         {memoizedPokemonNames.map((item) => {
           const capitalizedName = item[0].toUpperCase() + item.slice(1);
           return (
-            <option
-              key={`filterName - ${item}`}
-              value={item}
-            >
+            <option key={`filterName - ${item}`} value={item}>
               {capitalizedName}
             </option>
           );
         })}
       </select>
-      <select className="ml-5 sm:mt-0 mt-5 cursor-pointer border p-2" name="type" id="type" value={selectedTypeFilter} onChange={handleTypeChange}>
-      <option
-          key={`filterType - default`}
-          value="None"
-        >
+      <select
+        className="ml-5 sm:mt-0 mt-5 cursor-pointer border p-2"
+        name="type"
+        id="type"
+        value={selectedTypeFilter}
+        onChange={handleTypeChange}
+      >
+        <option key={`filterType - default`} value="None">
           Please Select - Type
         </option>
         {memoizedTypeData.map((item) => {
           const capitalizedType = item[0].toUpperCase() + item.slice(1);
           return (
-            <option
-              key={`filterName - ${item}`}
-              value={item}
-            >
+            <option key={`filterName - ${item}`} value={item}>
               {capitalizedType}
             </option>
           );
