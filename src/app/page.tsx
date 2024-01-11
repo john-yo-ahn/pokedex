@@ -37,8 +37,7 @@ export default function Home({
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>("None");
   const [loading, setLoading] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<any>("")
-
+  
   const memoizedInitialData = useMemo(() => {
     return restructureMonsterData(pokemonData);
   }, [pokemonData]);
@@ -82,7 +81,7 @@ export default function Home({
         }),
       });
       const data = await res.json();
-      setIsError(false)
+      setIsError(false);
 
       const {
         gen1_species: pokemonData,
@@ -92,7 +91,7 @@ export default function Home({
 
       setPokemonData(pokemonData);
     } catch (error) {
-      setIsError(true)
+      setIsError(true);
       console.error("error in home data fetch", error);
     }
 
@@ -192,8 +191,8 @@ export default function Home({
     }
   };
 
-  if (isError){
-    return <Error />
+  if (isError) {
+    return <Error />;
   }
 
   return (
