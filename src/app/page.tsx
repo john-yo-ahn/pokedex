@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Loading from "@/components/Loading";
 import PaginationControls from "@/components/PaginationControls";
+import Error from "./error";
 
 interface PokemonItem {
   name: string;
@@ -35,6 +36,8 @@ export default function Home({
   const [selectedNameFilter, setSelectedNameFilter] = useState<string>("None");
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>("None");
   const [loading, setLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<any>("")
 
   const memoizedInitialData = useMemo(() => {
     return restructureMonsterData(pokemonData);
@@ -79,6 +82,7 @@ export default function Home({
         }),
       });
       const data = await res.json();
+      setIsError(false)
 
       const {
         gen1_species: pokemonData,
@@ -88,6 +92,7 @@ export default function Home({
 
       setPokemonData(pokemonData);
     } catch (error) {
+      setIsError(true)
       console.error("error in home data fetch", error);
     }
 
@@ -186,6 +191,10 @@ export default function Home({
       filterByTypeHandle(event.target.value);
     }
   };
+
+  if (isError){
+    return <Error />
+  }
 
   return (
     <main className="md:pb-20 pb-10">

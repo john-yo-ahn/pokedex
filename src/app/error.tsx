@@ -5,8 +5,8 @@ export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
-  reset: () => void;
+  error?: Error & { digest?: string };
+  reset?: () => void;
 }) {
   const router = useRouter();
 
@@ -20,7 +20,7 @@ export default function Error({
         Something went wrong!
       </div>
       <div className="font-normal text-xl flex justify-center mt-2">
-        {error.message || "please check your error"}
+        {error?.message || "please check your error"}
       </div>
       <div className="flex justify-center">
       <button
